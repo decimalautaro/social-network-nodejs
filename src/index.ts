@@ -1,5 +1,5 @@
-import express from "express";
-import router from "./src/router";
+import express from 'express';
+import router from "./router";
 import cors from "cors";
 
 const app = express();
@@ -14,5 +14,5 @@ app
   .use("/", router);
 
 app.listen(process.env.PORT, () => {
-  console.log(`server listing on port ${process.env.PORT}`);
+  console.log(`Server listing on port ${process.env.PORT}`);
 });

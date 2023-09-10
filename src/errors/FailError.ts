@@ -1,8 +1,11 @@
-import CustomError from "./customError";
+import CustomError from './customError';
 
 export default class FailError extends CustomError {
   statusCode = 400;
-  constructor(public error: string, _statusCode: number = 400) {
+  constructor(
+    public error: string,
+    _statusCode: number = 400,
+  ) {
     super(error);
     this.statusCode = _statusCode;
   }

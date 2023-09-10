@@ -1,4 +1,4 @@
-import CustomError from "./customError";
+import CustomError from './customError';
 
 export default class NotFoundError extends CustomError {
   statusCode = 404;
@@ -11,6 +11,6 @@ export default class NotFoundError extends CustomError {
 
   // eslint-disable-next-line class-methods-use-this
   serializeErrors() {
-    return [{ message: "Not Found" }];
+    return [{ message: 'Not Found' }];
   }
 }
