@@ -1,4 +1,4 @@
-version: "3.1"
+version: '3.1'
 
 services:
   nodejs:
@@ -21,6 +21,10 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: social-network
+    volumes:
+      - ./data:/data/db
+      - ./data/log:/var/log/mongodb/
     logging:
       driver: none
 
