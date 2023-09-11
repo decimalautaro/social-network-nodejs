@@ -2,8 +2,10 @@ import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 
 import FailError from '../errors/FailError';
-import { User } from '../models/User';
+import { IUser, User } from '../models/User';
 import { generateJWT } from '../utils/generateJWT';
+import { getLimit, getSkip } from '../utils/controllers/utils';
+import PaginatedResponse from '../models/responses/PaginatedResponse';
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -65,4 +67,35 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { register, login };
+const findAll = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let user = [];
+
+    const limit = getLimit(req);
+    const skip = getSkip(req);
+
+    user = await User.find().skip(skip).limit(limit).select({ password: 0 });
+    const count = await User.count();
+
+    res.status(200).send(new PaginatedResponse<IUser>(user, skip, limit, count));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const findOneUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id).select({ password: 0, role: 0 });
+    if (!user) throw new FailError('User not found.');
+
+    return res.status(200).json({
+      user: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { register, login, findOneUser, findAll };
