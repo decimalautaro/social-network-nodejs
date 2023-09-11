@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt, { hashSync } from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 
 import FailError from '../errors/FailError';
@@ -67,7 +67,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const findAll = async (req: Request, res: Response, next: NextFunction) => {
+const findAllUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let user = [];
 
@@ -98,4 +98,43 @@ const findOneUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { register, login, findOneUser, findAll };
+const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user;
+
+    delete userId.iat;
+    delete userId.exp;
+
+    const data = req.body as IUser;
+    if (data.password) {
+      const hashPassword = hashSync(data.password, 10);
+      data.password = hashPassword;
+    }
+
+    const user = await User.findById(userId.id);
+    const existUser = await User.find({
+      $or: [{ email: data.email.toLowerCase() }, { nickName: data.nickName.toLowerCase() }],
+    });
+
+    if (!user) throw new FailError('Error user not found.');
+    if (existUser && existUser.length >= 1) throw new FailError('User already exists.');
+
+    Object.assign(user, data);
+    await User.findByIdAndUpdate(userId.id, user);
+
+    return res.status(200).json({
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const uploadImage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { register, login, findOneUser, findAllUser, updateUser, uploadImage };
