@@ -1,8 +1,9 @@
 import jsonwebtoken from 'jsonwebtoken';
+import { JwtPayloadInterface } from 'middlewares/validateJWT';
 
 const generateJWT = (id: string) => {
   return new Promise((resolve, reject) => {
-    const payload = { id };
+    const payload: JwtPayloadInterface = { id };
 
     jsonwebtoken.sign(
       payload,
