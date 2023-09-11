@@ -1,5 +1,6 @@
 import bcrypt, { hashSync } from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
+import fs from 'fs';
 
 import FailError from '../errors/FailError';
 import { IUser, User } from '../models/User';
@@ -132,6 +133,27 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const uploadImage = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.file) throw new FailError('The request does not include the image.');
+
+    const image = req.file.originalname;
+    const imageSplit = image.split('.');
+    const extension = imageSplit[1];
+
+    if (extension !== 'png' && extension !== 'jpg' && extension !== 'jpeg' && extension !== 'gif') {
+      const filePath = req.file.path;
+      fs.unlinkSync(filePath);
+      return res.status(400).json({
+        status: 'error',
+        message: 'Incorrect file extension',
+      });
+    }
+    const userUpdate = await User.findOneAndUpdate({ _id: req.user.id }, { image: req.file.filename });
+    if (!userUpdate) throw new FailError('Error uploading file');
+
+    return res.status(200).json({
+      user: userUpdate,
+      file: req.file,
+    });
   } catch (error) {
     next(error);
   }
