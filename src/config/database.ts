@@ -3,7 +3,7 @@ import { connect } from 'mongoose';
 
 const connection = async () => {
   try {
-    await connect(`mongodb://mongo/social_network`);
+    await connect(`mongodb://${process.env.URL_DATABASE}:${process.env.PORT_DATABASE}/`);
 
     console.log('Successfully connected to the database');
   } catch (error) {
@@ -12,4 +12,4 @@ const connection = async () => {
   }
 };
 
-export default connection ;
+export default connection;
