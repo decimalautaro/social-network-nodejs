@@ -1,6 +1,8 @@
+import fs from 'fs';
+import path from 'path';
+
 import bcrypt, { hashSync } from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
-import fs from 'fs';
 
 import FailError from '../errors/FailError';
 import { IUser, User } from '../models/User';
@@ -159,4 +161,24 @@ const uploadImage = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { register, login, findOneUser, findAllUser, updateUser, uploadImage };
+const avatar = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { file } = req.params;
+
+    const filePath = './src/uploads/avatars/' + file;
+
+    fs.stat(filePath, (error, exist) => {
+      if (!exist) {
+        return res.status(404).json({
+          message: 'The image does not exist',
+        });
+      }
+
+      return res.status(200).sendFile(path.resolve(filePath));
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { register, login, findOneUser, findAllUser, updateUser, uploadImage, avatar };

@@ -1,7 +1,15 @@
 import { Router } from 'express';
 import multer from 'multer';
 import validateRequest from '../../middlewares/validateRequest';
-import { login, findOneUser, register, findAllUser, updateUser, uploadImage } from '../../controllers/userController';
+import {
+  login,
+  findOneUser,
+  register,
+  findAllUser,
+  updateUser,
+  uploadImage,
+  avatar,
+} from '../../controllers/userController';
 import { validateJWT } from '../../middlewares/validateJWT';
 
 const router = Router();
@@ -24,5 +32,6 @@ router.get('/list/:page?', validateRequest, validateJWT, findAllUser);
 router.get('/profile/:id', validateRequest, validateJWT, findOneUser);
 router.put('/update/', validateRequest, validateJWT, updateUser);
 router.post('/upload/', validateRequest, [validateJWT, uploads.single('file')], uploadImage);
+router.get('/avatar/:file', validateRequest, validateJWT, avatar);
 
 export default router;
