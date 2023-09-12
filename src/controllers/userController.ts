@@ -80,13 +80,13 @@ const findAllUser = async (req: Request, res: Response, next: NextFunction) => {
     const limit = getLimit(req);
     const skip = getSkip(req);
 
-    user = await User.find().skip(skip).limit(limit).select({ password: 0 });
+    user = await User.find().skip(skip).limit(limit).select('-password -email -role -__v');
     const count = await User.count();
 
     const followUser = await followUserIds(req.user.id);
 
     const responseData = {
-      data: new PaginatedResponse<IUser>(user, skip, limit, count).data,
+      data: new PaginatedResponse<IUser>(user, skip, limit, count),
       userFollowMe: followUser.following,
       userFollowing: followUser.following,
     };

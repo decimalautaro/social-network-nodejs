@@ -3,7 +3,7 @@ import { Follow } from '../models/Follow';
 
 const followUserIds = async (identityUserId: string) => {
   try {
-    const following = await Follow.find({ user: identityUserId }).select({
+    const following = await Follow.find({ user: identityUserId, deleted: false }).select({
       _id: 0,
       __v: 0,
       user: 0,
@@ -11,7 +11,7 @@ const followUserIds = async (identityUserId: string) => {
       deleted: 0,
     });
 
-    const follower = await Follow.find({ followed: identityUserId }).select({
+    const follower = await Follow.find({ followed: identityUserId, deleted: false }).select({
       _id: 0,
       __v: 0,
       followed: 0,

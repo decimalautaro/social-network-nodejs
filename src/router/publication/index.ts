@@ -4,6 +4,7 @@ import validateRequest from '../../middlewares/validateRequest';
 import { Router } from 'express';
 import { validateJWT } from '../../middlewares/validateJWT';
 import {
+  feedPublications,
   findAllPublicationByUser,
   findImagePublication,
   findOnePublication,
@@ -28,7 +29,7 @@ const uploads = multer({ storage: storage });
 
 router.post('/save', validateRequest, validateJWT, savePublication);
 router.post('/upload/:publicationId', validateRequest, [validateJWT, uploads.single('file')], uploadImage);
-
+router.get('/feed', validateRequest, validateJWT, feedPublications);
 router.get('/image/:file', validateRequest, validateJWT, findImagePublication);
 router.get('/detail/:id', validateRequest, validateJWT, findOnePublication);
 router.get('/user/:id', validateRequest, validateJWT, findAllPublicationByUser);

@@ -4,6 +4,7 @@ import path from 'path';
 import { NextFunction, Request, Response } from 'express';
 
 import { getLimit, getSkip } from '../utils/controllers/utils';
+import { followUserIds } from '../utils/followUserIds';
 
 import FailError from '../errors/FailError';
 
@@ -37,7 +38,7 @@ const findAllPublicationByUser = async (req: Request, res: Response, next: NextF
 
     const publications = await Publication.find({ user: id, deleted: false })
       .sort('-createdAt')
-      .populate('user', '-password -__v -role')
+      .populate('user', '-password -__v -role -email')
       .skip(skip)
       .limit(limit);
     if (!publications || publications.length <= 0) throw new FailError('User is posts could not be found.');
@@ -147,6 +148,33 @@ const findImagePublication = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+const feedPublications = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = getLimit(req);
+    const skip = getSkip(req);
+
+    const myFollows = await followUserIds(req.user.id);
+
+    const publications = await Publication.find({ user: { $in: myFollows.following }, deleted: false })
+      .sort('-createdAt')
+      .populate('user', '-password -__v -role -email')
+      .skip(skip)
+      .limit(limit);
+    if (!publications) throw new FailError('User is posts could not be found.');
+
+    const count = await Publication.count({ user: { $in: myFollows.following }, deleted: false });
+
+    const responseData = {
+      responseData: new PaginatedResponse<IPublication>(publications, skip, limit, count),
+      following: myFollows.following,
+    };
+
+    return res.status(200).send(responseData);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   savePublication,
   findAllPublicationByUser,
@@ -154,4 +182,5 @@ export {
   removePublication,
   uploadImage,
   findImagePublication,
+  feedPublications,
 };

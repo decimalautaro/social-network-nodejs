@@ -17,7 +17,7 @@ const following = async (req: Request, res: Response, next: NextFunction) => {
     const skip = getSkip(req);
 
     const following = await Follow.find({ user: userId })
-      .populate('user followed', '-password -role -__v ') // segunda "" indico que quiero mostrar o agregando - cuales no deseo mostrar
+      .populate('user followed', '-password -role -__v -email') // segunda "" indico que quiero mostrar o agregando - cuales no deseo mostrar
       .skip(skip)
       .limit(limit)
       .select({ followed: 1, _id: 0 });
@@ -26,7 +26,7 @@ const following = async (req: Request, res: Response, next: NextFunction) => {
     const followUser = await followUserIds(req.user.id);
 
     const responseData = {
-      data: new PaginatedResponse<IFollow>(following, skip, limit, count).data,
+      responseData: new PaginatedResponse<IFollow>(following, skip, limit, count),
       userFollowing: followUser.following,
       userFollowMe: followUser.followers,
     };
@@ -45,7 +45,7 @@ const followers = async (req: Request, res: Response, next: NextFunction) => {
     const skip = getSkip(req);
 
     const following = await Follow.find({ followed: userId })
-      .populate('user followed', '-password -role -__v ') // segunda "" indico que quiero mostrar o agregando - cuales no deseo mostrar
+      .populate('user followed', '-password -role -__v -email ') // segunda "" indico que quiero mostrar o agregando - cuales no deseo mostrar
       .skip(skip)
       .limit(limit)
       .select({ followed: 1, _id: 0 });
