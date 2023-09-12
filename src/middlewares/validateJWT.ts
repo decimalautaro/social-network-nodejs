@@ -13,7 +13,7 @@ const validateJWT = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('auth-token');
 
     if (!token) {
-      throw new FailError('No hay token en la petición', 401);
+      throw new FailError('There is no token in the request.', 401);
     }
 
     const { id } = jsonwebtoken.verify(token, process.env.JWT_SECRET || '') as { id: string };
@@ -22,18 +22,18 @@ const validateJWT = async (req: Request, res: Response, next: NextFunction) => {
     const decodedJwtPayload: JwtPayloadInterface = await jwtDecode(token);
 
     if (!user) {
-      throw new FailError('Token no válido - usuario no existe DB', 401);
+      throw new FailError('Invalid token - user does not exist DB.', 401);
     }
 
     if (user.deleted) {
-      throw new FailError('Token no válido - usuario con estado:true', 401);
+      throw new FailError('Invalid token - user with status:true.', 401);
     }
     req.user = decodedJwtPayload;
 
     next();
   } catch (error) {
     if (error instanceof jsonwebtoken.TokenExpiredError) {
-      return res.status(401).json({ error: 'Token expirado' });
+      return res.status(401).json({ error: 'Expired token.' });
     }
     next(error);
   }

@@ -1,13 +1,49 @@
 import { NextFunction, Request, Response } from 'express';
 import FailError from '../errors/FailError';
 
-import { Follow } from '../models/Follow';
+import { getLimit, getSkip } from '../utils/controllers/utils';
+
+import { Follow, IFollow } from '../models/Follow';
+import PaginatedResponse from '../models/responses/PaginatedResponse';
+import { User } from '../models/User';
+
+const following = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let userId = req.user.id;
+    if (req.params.id) userId = req.params.id;
+
+    const limit = getLimit(req);
+    const skip = getSkip(req);
+
+    const following = await Follow.find({ user: userId })
+      .populate('user followed', '-password -role -__v') // segunda "" indico que quiero mostrar o agregando - cuales no deseo mostrar
+      .skip(skip)
+      .limit(limit)
+      .select({ password: 0 });
+    const count = await Follow.count();
+
+    res.status(200).send(new PaginatedResponse<IFollow>(following, skip, limit, count));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const followed = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
 
 const saveFollow = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { followed } = req.body;
 
     const identity = req.user;
+
+    const userFollowed = await User.findById(String(followed));
+
+    if (!userFollowed) throw new FailError('User not exists.');
 
     const userToFollow = new Follow({
       user: identity.id,
@@ -42,4 +78,4 @@ const unFollow = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { saveFollow, unFollow };
+export { following, followed, saveFollow, unFollow };
