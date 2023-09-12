@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 
 import { NextFunction, Request, Response } from 'express';
 
@@ -126,4 +127,31 @@ const uploadImage = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { savePublication, findAllPublicationByUser, findOnePublication, removePublication, uploadImage };
+const findImagePublication = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { file } = req.params;
+
+    const filePath = './src/uploads/publications/' + file;
+
+    fs.stat(filePath, (error, exist) => {
+      if (!exist) {
+        return res.status(404).json({
+          message: 'The image does not exist',
+        });
+      }
+
+      return res.status(200).sendFile(path.resolve(filePath));
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export {
+  savePublication,
+  findAllPublicationByUser,
+  findOnePublication,
+  removePublication,
+  uploadImage,
+  findImagePublication,
+};

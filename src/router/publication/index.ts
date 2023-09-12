@@ -5,6 +5,7 @@ import { Router } from 'express';
 import { validateJWT } from '../../middlewares/validateJWT';
 import {
   findAllPublicationByUser,
+  findImagePublication,
   findOnePublication,
   removePublication,
   savePublication,
@@ -28,6 +29,7 @@ const uploads = multer({ storage: storage });
 router.post('/save', validateRequest, validateJWT, savePublication);
 router.post('/upload/:publicationId', validateRequest, [validateJWT, uploads.single('file')], uploadImage);
 
+router.get('/image/:file', validateRequest, validateJWT, findImagePublication);
 router.get('/detail/:id', validateRequest, validateJWT, findOnePublication);
 router.get('/user/:id', validateRequest, validateJWT, findAllPublicationByUser);
 router.delete('/remove/:id', validateRequest, validateJWT, removePublication);
