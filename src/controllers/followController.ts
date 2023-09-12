@@ -2,10 +2,11 @@ import { NextFunction, Request, Response } from 'express';
 import FailError from '../errors/FailError';
 
 import { getLimit, getSkip } from '../utils/controllers/utils';
+import { followThisUser, followUserIds } from '../utils/followUserIds';
 
+import { User } from '../models/User';
 import { Follow, IFollow } from '../models/Follow';
 import PaginatedResponse from '../models/responses/PaginatedResponse';
-import { User } from '../models/User';
 
 const following = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -16,13 +17,20 @@ const following = async (req: Request, res: Response, next: NextFunction) => {
     const skip = getSkip(req);
 
     const following = await Follow.find({ user: userId })
-      .populate('user followed', '-password -role -__v') // segunda "" indico que quiero mostrar o agregando - cuales no deseo mostrar
+      .populate('user followed', '-password -role -__v ') // segunda "" indico que quiero mostrar o agregando - cuales no deseo mostrar
       .skip(skip)
       .limit(limit)
-      .select({ password: 0 });
+      .select({ followed: 1, _id: 0 });
     const count = await Follow.count();
 
-    res.status(200).send(new PaginatedResponse<IFollow>(following, skip, limit, count));
+    const followUser = await followUserIds(req.user.id);
+
+    const responseData = {
+      data: new PaginatedResponse<IFollow>(following, skip, limit, count).data,
+      userFollowing: followUser.following,
+      userFollowMe: followUser.followers,
+    };
+    res.status(200).send(responseData);
   } catch (error) {
     next(error);
   }
