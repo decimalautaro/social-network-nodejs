@@ -1,5 +1,5 @@
 import FailError from '../errors/FailError';
-import { Follow, IFollow } from '../models/Follow';
+import { Follow } from '../models/Follow';
 
 const followUserIds = async (identityUserId: string) => {
   try {
@@ -11,7 +11,7 @@ const followUserIds = async (identityUserId: string) => {
       deleted: 0,
     });
 
-    const followers = await Follow.find({ followed: identityUserId }).select({
+    const follower = await Follow.find({ followed: identityUserId }).select({
       _id: 0,
       __v: 0,
       followed: 0,
@@ -24,7 +24,7 @@ const followUserIds = async (identityUserId: string) => {
       followingClean.push(String(follow.followed));
     });
     const followersClean: string[] = [];
-    followers.forEach((follow) => {
+    follower.forEach((follow) => {
       followersClean.push(String(follow.user));
     });
 
@@ -36,5 +36,19 @@ const followUserIds = async (identityUserId: string) => {
     throw new FailError('Error when performing the search.');
   }
 };
-const followThisUser = async (identityUserId: string, profileUserId: string) => {};
+
+const followThisUser = async (identityUserId: string, profileUserId: string) => {
+  try {
+    const following = await Follow.findOne({ user: identityUserId, followed: profileUserId });
+
+    const follower = await Follow.findOne({ user: profileUserId, followed: identityUserId });
+    return {
+      following,
+      follower,
+    };
+  } catch (error) {
+    throw new FailError('Error when performing the search.');
+  }
+};
+
 export { followUserIds, followThisUser };

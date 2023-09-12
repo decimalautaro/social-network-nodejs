@@ -6,8 +6,11 @@ import { NextFunction, Request, Response } from 'express';
 
 import FailError from '../errors/FailError';
 import { IUser, User } from '../models/User';
+
 import { generateJWT } from '../utils/generateJWT';
 import { getLimit, getSkip } from '../utils/controllers/utils';
+import { followThisUser } from '../utils/followUserIds';
+
 import PaginatedResponse from '../models/responses/PaginatedResponse';
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -93,8 +96,12 @@ const findOneUser = async (req: Request, res: Response, next: NextFunction) => {
     const user = await User.findById(id).select({ password: 0, role: 0 });
     if (!user) throw new FailError('User not found.');
 
+    const followInfo = await followThisUser(req.user.id, id);
+
     return res.status(200).json({
       user: user,
+      following: followInfo.following,
+      follower: followInfo.follower,
     });
   } catch (error) {
     next(error);

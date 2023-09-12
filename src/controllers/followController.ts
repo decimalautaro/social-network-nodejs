@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import FailError from '../errors/FailError';
 
 import { getLimit, getSkip } from '../utils/controllers/utils';
-import { followThisUser, followUserIds } from '../utils/followUserIds';
+import { followUserIds } from '../utils/followUserIds';
 
 import { User } from '../models/User';
 import { Follow, IFollow } from '../models/Follow';
