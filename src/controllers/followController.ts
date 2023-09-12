@@ -69,6 +69,9 @@ const saveFollow = async (req: Request, res: Response, next: NextFunction) => {
     const { followed } = req.body;
 
     const identity = req.user;
+    const existingFollow = await Follow.findOne({ user: identity.id, followed: followed });
+
+    if (existingFollow) throw new FailError('user already exists');
 
     const userFollowed = await User.findById(String(followed));
 

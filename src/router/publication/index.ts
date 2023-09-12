@@ -12,6 +12,7 @@ import {
   savePublication,
   uploadImage,
 } from '../../controllers/publicationController';
+import { body } from 'express-validator';
 
 const router = Router();
 
@@ -27,7 +28,16 @@ const storage = multer.diskStorage({
 
 const uploads = multer({ storage: storage });
 
-router.post('/save', validateRequest, validateJWT, savePublication);
+router.post(
+  '/save',
+  [
+    body('text').isString().notEmpty().isLength({ min: 1, max: 255 }),
+    body('file').isString().optional(),
+    validateRequest,
+  ],
+  validateJWT,
+  savePublication,
+);
 router.post('/upload/:publicationId', validateRequest, [validateJWT, uploads.single('file')], uploadImage);
 router.get('/feed', validateRequest, validateJWT, feedPublications);
 router.get('/image/:file', validateRequest, validateJWT, findImagePublication);
