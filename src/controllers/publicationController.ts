@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 import { NextFunction, Request, Response } from 'express';
 
 import { getLimit, getSkip } from '../utils/controllers/utils';
@@ -74,4 +76,54 @@ const removePublication = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export { savePublication, findAllPublicationByUser, findOnePublication, removePublication };
+const uploadImage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { publicationId } = req.params;
+
+    const publicationExists = await Publication.findOne({
+      _id: publicationId,
+      deleted: false,
+    });
+
+    if (!req.file) throw new FailError('The request does not include the image.');
+
+    const image = req.file.originalname;
+    const imageSplit = image.split('.');
+    const extension = imageSplit[1];
+
+    if (extension !== 'png' && extension !== 'jpg' && extension !== 'jpeg' && extension !== 'gif') {
+      const filePath = req.file.path;
+      fs.unlinkSync(filePath);
+      return res.status(400).json({
+        status: 'error',
+        message: 'Incorrect file extension',
+      });
+    }
+    const publicationUpdate = await Publication.findOneAndUpdate(
+      { user: req.user.id, _id: publicationId, deleted: false },
+      { file: req.file.filename },
+    );
+
+    if (!publicationUpdate) {
+      const filePath = req.file.path;
+      fs.unlinkSync(filePath);
+
+      throw new FailError('Error uploading file, publication does not exist.');
+    }
+
+    if (!publicationExists) {
+      const filePath = req.file.path;
+      fs.unlinkSync(filePath);
+      throw new FailError('Publication does not exist.');
+    }
+
+    return res.status(200).json({
+      publication: publicationUpdate,
+      file: req.file,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { savePublication, findAllPublicationByUser, findOnePublication, removePublication, uploadImage };
