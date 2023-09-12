@@ -9,7 +9,7 @@ import { IUser, User } from '../models/User';
 
 import { generateJWT } from '../utils/generateJWT';
 import { getLimit, getSkip } from '../utils/controllers/utils';
-import { followThisUser } from '../utils/followUserIds';
+import { followThisUser, followUserIds } from '../utils/followUserIds';
 
 import PaginatedResponse from '../models/responses/PaginatedResponse';
 
@@ -83,7 +83,15 @@ const findAllUser = async (req: Request, res: Response, next: NextFunction) => {
     user = await User.find().skip(skip).limit(limit).select({ password: 0 });
     const count = await User.count();
 
-    res.status(200).send(new PaginatedResponse<IUser>(user, skip, limit, count));
+    const followUser = await followUserIds(req.user.id);
+
+    const responseData = {
+      data: new PaginatedResponse<IUser>(user, skip, limit, count).data,
+      userFollowMe: followUser.following,
+      userFollowing: followUser.following,
+    };
+
+    res.status(200).send(responseData);
   } catch (error) {
     next(error);
   }

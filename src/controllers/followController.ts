@@ -36,8 +36,29 @@ const following = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const followed = async (req: Request, res: Response, next: NextFunction) => {
+const followers = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    let userId = req.user.id;
+    if (req.params.id) userId = req.params.id;
+
+    const limit = getLimit(req);
+    const skip = getSkip(req);
+
+    const following = await Follow.find({ followed: userId })
+      .populate('user followed', '-password -role -__v ') // segunda "" indico que quiero mostrar o agregando - cuales no deseo mostrar
+      .skip(skip)
+      .limit(limit)
+      .select({ followed: 1, _id: 0 });
+    const count = await Follow.count();
+
+    const followUser = await followUserIds(req.user.id);
+
+    const responseData = {
+      data: new PaginatedResponse<IFollow>(following, skip, limit, count).data,
+      userFollowing: followUser.following,
+      userFollowMe: followUser.followers,
+    };
+    res.status(200).send(responseData);
   } catch (error) {
     next(error);
   }
@@ -86,4 +107,4 @@ const unFollow = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { following, followed, saveFollow, unFollow };
+export { following, followers, saveFollow, unFollow };
