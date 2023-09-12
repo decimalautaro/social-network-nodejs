@@ -9,6 +9,7 @@ import {
   updateUser,
   uploadImage,
   avatar,
+  counters,
 } from '../../controllers/userController';
 import { validateJWT } from '../../middlewares/validateJWT';
 
@@ -33,5 +34,6 @@ router.get('/profile/:id', validateRequest, validateJWT, findOneUser);
 router.put('/update/', validateRequest, validateJWT, updateUser);
 router.post('/upload/', validateRequest, [validateJWT, uploads.single('file')], uploadImage);
 router.get('/avatar/:file', validateRequest, validateJWT, avatar);
+router.get('/counters/:id', validateRequest, validateJWT, counters);
 
 export default router;

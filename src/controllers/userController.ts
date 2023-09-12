@@ -5,13 +5,15 @@ import bcrypt, { hashSync } from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 
 import FailError from '../errors/FailError';
-import { IUser, User } from '../models/User';
 
 import { generateJWT } from '../utils/generateJWT';
 import { getLimit, getSkip } from '../utils/controllers/utils';
 import { followThisUser, followUserIds } from '../utils/followUserIds';
 
 import PaginatedResponse from '../models/responses/PaginatedResponse';
+import { Follow } from '../models/Follow';
+import { Publication } from '../models/Publication';
+import { IUser, User } from '../models/User';
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -196,4 +198,27 @@ const avatar = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { register, login, findOneUser, findAllUser, updateUser, uploadImage, avatar };
+const counters = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let { userId } = req.user;
+
+    if (req.params.id) {
+      userId = req.params.id;
+    }
+
+    const following = await Follow.count({ user: userId });
+    const followed = await Follow.count({ followed: userId });
+    const publications = await Publication.count({ user: userId });
+
+    return res.status(200).json({
+      userId,
+      following: following,
+      followed: followed,
+      publications: publications,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { register, login, findOneUser, findAllUser, updateUser, uploadImage, avatar, counters };
